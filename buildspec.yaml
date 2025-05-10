@@ -16,6 +16,13 @@ phases:
       - echo Building the Angular application...
       - ng build --configuration=production
 
+  post_build:
+  commands:
+    - echo Uploading build to S3...
+    - aws s3 cp dist/angularapp s3://artifacts-buck-angular/ --recursive
+
+ 
+
 
 artifacts:
   files:
