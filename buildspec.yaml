@@ -16,6 +16,15 @@ phases:
       - echo Building the Angular application...
       - ng build --configuration=production
 
+
+artifacts:
+  files:
+    - '**/*'
+  base-directory: dist/angularapp
+
+
+  
+
  
 
 
