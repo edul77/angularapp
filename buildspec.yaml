@@ -4,6 +4,7 @@ phases:
   install:
     runtime-versions:
       nodejs: 18
+      java: corretto11
     commands:
       - echo installing npm .............
       - sudo apt install npm -y
