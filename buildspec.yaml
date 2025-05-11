@@ -17,11 +17,11 @@ phases:
       - echo Building the Angular application...
       - ng build --configuration=production 
       - echo Installing maven ............
-      - sudo apt install maven -y
+      - sudo apt install maven 
       - cd java-app
       - echo Building the java application 
       - mvn test
-      - mvn install 
+      - mvn clean install 
       - cd ..
 
 
@@ -31,10 +31,9 @@ phases:
     commands:
       - echo Organizing build artifacts...
       - mkdir -p build-out/frontend
-      - mkdir -p build-out/backend
-      - sudo -i 
-      - cp -r /dist/angularapp/* build-output/frontend/
-      - cp /target/*.jar build-output/backend/
+      - mkdir -p build-out/backend 
+      - sudo cp -r /dist/angularapp/* build-output/frontend/
+      - sudo cp /target/*.jar build-output/backend/
   
 
   post_build:
