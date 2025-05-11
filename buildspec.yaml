@@ -4,7 +4,8 @@ phases:
   install:
     runtime-versions:
       nodejs: 18
-      java: corretto11
+      java: corretto17
+      maven: 3.8
     commands:
       - echo installing npm .............
       - sudo apt install npm -y
@@ -17,8 +18,7 @@ phases:
       - echo Building the Angular application...
       - ng build --configuration=production 
       - cd java-app
-      - echo Building the java application 
-      - mvn test
+      - echo Building the java application
       - mvn clean install 
       - cd ..
 
