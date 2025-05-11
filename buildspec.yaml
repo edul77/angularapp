@@ -19,6 +19,8 @@ phases:
   
   build:
     commands:
+      - echo Installing maven ............
+      - sudo apt install maven -y 
       - echo Building the java application 
       - mvn clean package
       
