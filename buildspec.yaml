@@ -12,7 +12,7 @@ phases:
       - echo "Updating apt and installing Maven…"
       - sudo wget -P /tmp https://dlcdn.apache.org/maven/maven-3/3.9.9/binaries/apache-maven-3.9.9-bin.tar.gz
       - sudo tar xzvf /tmp/apache-maven-3.9.9-bin.tar.gz
-      - mkdir /opt/maven
+      - sudo mkdir /opt/maven
       - chmod -R 777 /opt
       - sudo cp -r /tmp/apache-maven-3.9.9 /opt/maven
       - chmod -R 755 /opt
