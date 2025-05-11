@@ -10,7 +10,7 @@ phases:
       - sudo apt update
       - sudo apt install default-jdk -y
       - echo "Updating apt and installing Maven…"
-      - sudo wget -P /tmphttps://dlcdn.apache.org/maven/maven-3/3.9.9/binaries/apache-maven-3.9.9-bin.tar.gz
+      - sudo wget -P /tmp https://dlcdn.apache.org/maven/maven-3/3.9.9/binaries/apache-maven-3.9.9-bin.tar.gz
       - sudo tar xzvf /tmp/apache-maven-3.9.9-bin.tar.gz
       - sudo cp -r /tmp/apache-maven-3.9.9 /opt/maven
       - echo "Installing Angular CLI…"
