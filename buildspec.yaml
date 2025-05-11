@@ -16,10 +16,24 @@ phases:
       - echo Building the Angular application...
       - ng build --configuration=production
 
+  
+  build:
+    commands:
+      - echo Building the java application 
+      - mvn clean package
+      
+  
+
   post_build:
     commands:
     - echo Uploading build to S3...
-    - aws s3 cp dist/angularapp s3://artifacts-buck-angular/ --recursive
+    - aws s3 cp dist/angularapp s3://artifacts-buck-angular/frontend --recursive
+
+  post_build:
+    commands:
+    - echo Uploading jar build  to S3...
+    - aws s3 cp target/sample-java-app  s3://artifacts-buck-angular/backend --recursive
+
 
  
 
@@ -28,6 +42,7 @@ artifacts:
   files:
     - '**/*'
   base-directory: dist/angularapp
+  base-directory: target/sample-java-app
 
 
   
