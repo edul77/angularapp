@@ -5,23 +5,24 @@ phases:
     runtime-versions:
       nodejs: 18
       java: corretto17
+
     commands:
-      - echo installing npm .............
-      - sudo apt install npm -y
-      - echo Installing Angular CLI and dependencies...
+      - echo "Updating apt and installing Maven…"
+      - apt-get update
+      - apt-get install -y maven
+      - echo "Installing Angular CLI…"
       - npm install -g @angular/cli
       - npm install
-      - sudo apt-get update
-      - sudo apt-get install -y maven
 
   build:
     commands:
-      - echo Building the Angular application...
-      - ng build --configuration=production 
+      - echo "Building Angular…"
+      - ng build --configuration=production
+      - echo "Building Java…"
       - cd java-app
-      - echo Building the java application
-      - mvn clean install 
+      - mvn clean install
       - cd ..
+
 
 
 
