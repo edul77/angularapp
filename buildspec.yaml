@@ -28,6 +28,7 @@ phases:
       - echo Organizing build artifacts...
       - mkdir -p build-out/frontend
       - mkdir -p build-out/backend
+      - sudo -i 
       - cp -r /dist/angularapp/* build-output/frontend/
       - cp /target/*.jar build-output/backend/
   
