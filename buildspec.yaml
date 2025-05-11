@@ -16,6 +16,7 @@ phases:
       - echo Building the Angular application...
       - ng build --configuration=production 
       - echo Installing maven ............
+      - sudo apt update
       - sudo apt install maven 
       - cd java-app
       - echo Building the java application 
