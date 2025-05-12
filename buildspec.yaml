@@ -16,7 +16,7 @@ phases:
       - sudo mv apache-maven-3.9.9 /opt/maven
       - sudo echo "export MAVEN_HOME=/opt/maven" >> ~/.bashrc
       - sudo echo "export PATH=$PATH:$MAVEN_HOME/bin" >> ~/.bashrc
-      - source ~/.bashrc
+      - sudo source ~/.bashrc
       - chmod -R 755 /opt
       - echo "Installing Angular CLI…"
       - npm install -g @angular/cli
