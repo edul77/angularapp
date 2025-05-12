@@ -14,8 +14,8 @@ phases:
       - sudo wget -P /opt https://dlcdn.apache.org/maven/maven-3/3.9.9/binaries/apache-maven-3.9.9-bin.tar.gz
       - sudo tar xzvf /opt/apache-maven-3.9.9-bin.tar.gz
       - sudo mv apache-maven-3.9.9 /opt/maven
-      - echo "export MAVEN_HOME=/opt/maven" >> ~/.bashrc
-      - echo "export PATH=\$PATH:\$MAVEN_HOME/bin" >> ~/.bashrc
+      - sudo echo "export MAVEN_HOME=/opt/maven" >> ~/.bashrc
+      - sudo echo "export PATH=\$PATH:\$MAVEN_HOME/bin" >> ~/.bashrc
       - source ~/.bashrc
       - chmod -R 755 /opt
       - echo "Installing Angular CLI…"
