@@ -4,11 +4,14 @@ phases:
   install:
     runtime-versions:
       nodejs: 18
-      java: corretto17
+      java: corretto8
 
     commands:
       - sudo apt update
       - sudo apt install default-jdk -y
+      - echo "Using Corretto 8 for this old Java 1.8 project…"
+      - export JAVA_HOME=/usr/lib/jvm/java-1.8.0-amazon-corretto
+      - echo "JAVA_HOME=$JAVA_HOME"
       - echo "Updating apt and installing Maven…"
       - chmod -R 777 /opt
       - sudo wget -P /opt https://dlcdn.apache.org/maven/maven-3/3.9.9/binaries/apache-maven-3.9.9-bin.tar.gz
