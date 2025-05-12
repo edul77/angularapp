@@ -16,8 +16,8 @@ phases:
       - sudo mv apache-maven-3.9.9 /opt/maven
       - export MAVEN_HOME=/opt/maven
       - export PATH=$JAVA_HOME/bin:$MAVEN_HOME/bin:$PATH
-      - echo "java version: $(java -version 2>&1)"
-      - echo "mvn version:  $(mvn -v)"
+      - echo "java version:\ $(java -version 2>&1)"
+      - echo "mvn version:\ $(mvn -v)"
       - chmod -R 755 /opt
       - echo "Installing Angular CLI…"
       - npm install -g @angular/cli
