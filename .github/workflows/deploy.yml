@@ -1,0 +1,53 @@
+name: Deploy Angular to EC2 with NGINX
+
+on:
+  push:
+    branches:
+      - master 
+
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: 📥 Checkout Code
+        uses: actions/checkout@v4
+
+      - name: 🟢 Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 18
+
+      - name: 📦 Install Dependencies
+        run: npm ci
+
+      - name: 🏗️ Build Angular App
+        run: npm run build -- --configuration production
+
+      - name: 🔑 Setup SSH Key
+        run: |
+          sudo mkdir -p ~/.ssh
+          echo "${{ secrets.EC2_SSH_KEY }}" > ~/.ssh/id_rsa
+          sudo chmod 600 ~/.ssh/id_rsa
+          sudo  ssh-keyscan -H ${{ secrets.EC2_HOST }} >> ~/.ssh/known_hosts
+
+      - name: 🧰 Install NGINX on EC2 (if not present)
+        run: |
+          ssh ${{ secrets.EC2_USER }}@${{ secrets.EC2_HOST }} << 'EOF'
+            if ! command -v nginx &> /dev/null; then
+              echo "NGINX not found. Installing..."
+              sudo apt update
+              sudo apt install -y nginx
+              sudo systemctl enable nginx
+            else
+              echo "NGINX is already installed."
+            fi
+          EOF
+
+      - name: 📤 Deploy to EC2 via SCP
+        run: |
+          scp -r dist/* ${{ secrets.EC2_USER }}@${{ secrets.EC2_HOST }}:${{ secrets.EC2_TARGET_DIR }}
+
+      - name: 🔄 Restart NGINX (optional)
+        run: |
+          ssh ${{ secrets.EC2_USER }}@${{ secrets.EC2_HOST }} 'sudo systemctl restart nginx'
