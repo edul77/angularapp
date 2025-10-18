@@ -46,7 +46,7 @@ jobs:
 
       - name: Copy Build Files to EC2
         run: |
-         scp -r dist/ ${{ secrets.JOBMATCH_EC2_USER }}@${{ secrets.JOBMATCH_EC2_HOSTT }}:/var/www/jobmatch
+         scp -r dist/ ubuntu@${{ secrets.JOBMATCH_EC2_HOSTT }}:/var/www/jobmatch
 
       - name: 🔄 Restart NGINX (optional)
         run: |
