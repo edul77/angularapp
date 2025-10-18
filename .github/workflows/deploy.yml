@@ -27,12 +27,13 @@ jobs:
       - name: 🔑 Setup SSH Key
         run: |
           mkdir -p ~/.ssh
-          echo "${{ secrets.EC2_SSH_KEY }}" > ~/.ssh/id_rsa
+          echo "${{ secrets.JOBMATCH_EC2_SSH_KEY }}" > ~/.ssh/id_rsa
           sudo chmod 600 ~/.ssh/id_rsa
+           ssh-keyscan -H ${{ secrets.JOBMATCH_EC2_HOST }} >> ~/.ssh/known_hosts
 
       - name: 🧰 Install NGINX on EC2 (if not present)
         run: |
-          ssh ubuntu@34.233.71.182
+          ssh -i ${{ secrets.JOBMATCH_EC2_SSH_KEY }} ${{ secrets.JOBMATCH_EC2_USER }}@${{ secrets.JOBMATCH_EC2_HOST }} -y
               sudo apt update
               sudo apt install -y nginx
               sudo systemctl enable nginx
