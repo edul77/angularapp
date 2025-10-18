@@ -36,10 +36,6 @@ jobs:
               sudo apt update
               sudo apt install -y nginx
               sudo systemctl enable nginx
-            else
-              echo "NGINX is already installed."
-            fi
-          EOF
 
       - name: 📤 Deploy to EC2 via SCP
         run: |
