@@ -24,6 +24,9 @@ jobs:
       - name: 🏗️ Build Angular App
         run: npm run build -- --configuration production
 
+      - name: 🔎 Debug dist folder
+        run: ls -R dist/
+
       - name: 🔑 Setup SSH Key
         run: |
           mkdir -p ~/.ssh
