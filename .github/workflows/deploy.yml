@@ -26,7 +26,7 @@ jobs:
 
       - name: 🔑 Setup SSH Key
         run: |
-          mkdir -p ~/.ssh
+          sudo mkdir -p ~/.ssh
           echo "${{ secrets.JOBMATCH_EC2_SSH_KEY }}" > ~/.ssh/id_rsa
           sudo chmod 600 ~/.ssh/id_rsa
           ssh-keyscan -H ${{ secrets.SSH_HOST }} >> ~/.ssh/known_hosts
