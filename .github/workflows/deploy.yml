@@ -35,19 +35,8 @@ jobs:
           ssh-keyscan -H ${{ secrets.JOBMATCH_EC2_HOST }} >> ~/.ssh/known_hosts
           
         
-
-      - name: 🧰 Install NGINX on EC2 (if not present)
-        run: |
-          ssh ${{ secrets.JOBMATCH_EC2_USER }}@${{ secrets.JOBMATCH_EC2_HOST }} << 'EOF'
-            if ! command -v nginx &> /dev/null; then
-              echo "NGINX not found. Installing..."
-              sudo apt update
-              sudo apt install -y nginx
-              sudo systemctl enable nginx
-            else
-              echo "NGINX is already installed."
-            fi
-          EOF
+     
+      
 
       - name: 🗂️ Ensure /var/www/jobmatch exists
         run: |
@@ -55,7 +44,30 @@ jobs:
          "sudo mkdir -p /var/www/jobmatch && sudo chown -R www-data:www-data /var/www/jobmatch && sudo find /var/www/jobmatch -type d -exec chmod 757 {} \; && sudo find /var/www/jobmatch -type f -exec chmod 644 {} \;" 
         
 
+      - name: ⚙️ Configure NGINX
+        run: |
+         ssh -i ~/.ssh/id_rsa ${{ secrets.JOBMATCH_EC2_USER }}@${{ secrets.JOBMATCH_EC2_HOST }} << 'EOF'
+         sudo tee /etc/nginx/sites-available/jobmatch > /dev/null <<EOL
+         server {
+           listen 80;
+           server_name  campusvaultgh.com;
+
+           root /var/www/jobmatch;
+           index index.html;
+
+           location / {
+          try_files \$uri \$uri/ /index.html;
+         }
          
+         }
+        
+         EOL
+      - name: activating nginx site 
+        run: | 
+         sudo ln -sf /etc/nginx/sites-available/jobmatch /etc/nginx/sites-enabled/jobmatch
+         sudo nginx -t && sudo systemctl restart nginx
+         EOF
+  
          
 
       - name: Copy Build Files to EC2
