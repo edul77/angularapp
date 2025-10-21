@@ -57,8 +57,8 @@ jobs:
 
       - name: ⚙️ Configure NGINX
         run: |
-         ssh -i ~/.ssh/id_rsa ${{ secrets.JOBMATCH_EC2_USER }}@${{ secrets.JOBMATCH_EC2_HOST }} << 'EOF'
-         sudo tee /etc/nginx/sites-available/jobmatch > /dev/null <<EOL
+         ssh -i ~/.ssh/id_rsa ${{ secrets.JOBMATCH_EC2_USER }}@${{ secrets.JOBMATCH_EC2_HOST }} 
+         sudo tee /etc/nginx/sites-available/jobmatch > /dev/null << EOF
          server {
            listen 80;
            server_name  campusvaultgh.com;
@@ -72,7 +72,7 @@ jobs:
          
          }
         
-         EOL
+         EOF
          
       - name: activating nginx site 
         run: | 
