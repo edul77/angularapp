@@ -71,7 +71,7 @@ jobs:
          }
          
          }
-         EOF
+         'EOF'
          
       - name: activating nginx site 
         run: | 
@@ -83,6 +83,10 @@ jobs:
       - name: Copy Build Files to EC2
         run: |
          scp -i ~/.ssh/id_rsa -r dist/angularapp/browser/* ${{ secrets.JOBMATCH_EC2_USER }}@${{ secrets.JOBMATCH_EC2_HOST }}:/var/www/jobmatch
+         sudo chown -R www-data:www-data /var/www/jobmatch 
+         sudo find /var/www/jobmatch -type d -exec chmod 755 {} \;
+         sudo find /var/www/jobmatch -type f -exec chmod 644 {} \;
+         
 
 
       - name: 🔄 Restart NGINX (optional)
