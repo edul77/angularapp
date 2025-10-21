@@ -53,7 +53,7 @@ jobs:
       - name: 🗂️ Ensure /var/www/jobmatch exists
         run: |
          ssh -i ~/.ssh/id_rsa ${{ secrets.JOBMATCH_EC2_USER }}@${{ secrets.JOBMATCH_EC2_HOST }} \
-         "sudo mkdir -p /var/www/jobmatch && sudo chown -R www-data:www-data /var/www/jobmatch && sudo find /var/www/jobmatch -type d -exec chmod 757 {} \; && sudo find /var/www/jobmatch -type f -exec chmod 644 {} \;" 
+         "sudo mkdir -p /var/www/jobmatch && sudo chown -R www-data:www-data /var/www/jobmatch && sudo find /var/www/jobmatch -type d -exec chmod 777 {} \; && sudo find /var/www/jobmatch -type f -exec chmod 644 {} \;" 
         
 
       - name: ⚙️ Configure NGINX
