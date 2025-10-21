@@ -33,10 +33,21 @@ jobs:
           echo "${{ secrets.JOBMATCH_EC2_SSH_KEY }}" > ~/.ssh/id_rsa
           sudo chmod 600 ~/.ssh/id_rsa
           ssh-keyscan -H ${{ secrets.JOBMATCH_EC2_HOST }} >> ~/.ssh/known_hosts
+
+
+      - name: 🧰 Install NGINX on EC2 (if not present)
+        run: |
+          ssh ${{ secrets.JOBMATCH_EC2_USER }}@${{ secrets.JOBMATCH_EC2_HOST }} << 'EOF'
+            if ! command -v nginx &> /dev/null; then
+              echo "NGINX not found. Installing..."
+              sudo apt update
+              sudo apt install -y nginx
+              sudo systemctl enable nginx
+            else
+              echo "NGINX is already installed."
+            fi
+          EOF
           
-        
-     
-      
 
       - name: 🗂️ Ensure /var/www/jobmatch exists
         run: |
@@ -62,6 +73,7 @@ jobs:
          }
         
          EOL
+         
       - name: activating nginx site 
         run: | 
          ssh -i ~/.ssh/id_rsa ${{ secrets.JOBMATCH_EC2_USER }}@${{ secrets.JOBMATCH_EC2_HOST }}
