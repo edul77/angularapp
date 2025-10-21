@@ -64,11 +64,12 @@ jobs:
          EOL
       - name: activating nginx site 
         run: | 
-         sudo ln -s /etc/nginx/sites-available/jobmatch /etc/nginx/sites-enabled/jobmatch
+         sudo ln -sf /etc/nginx/sites-available/jobmatch /etc/nginx/sites-enabled/
          sudo nginx -t && sudo systemctl restart nginx
          EOF
          
   
+
          
 
       - name: Copy Build Files to EC2
