@@ -69,15 +69,15 @@ jobs:
             sudo tee /etc/nginx/sites-available/jobmatch > /dev/null <<'NGINX_CONF'
     
           server {
-          listen 80;
-          server_name campusvaultgh.com;
+            listen 80;
+            server_name campusvaultgh.com;
 
-          root /var/www/jobmatch;
-          index index.html;
+            root /var/www/jobmatch;
+            index index.html;
 
-          location / {
-           try_files \$uri \$uri/ /index.html;
-            }
+            location / {
+              try_files \$uri \$uri/ /index.html;
+              }
           }
           
           NGINX_CONF
