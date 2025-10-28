@@ -47,18 +47,19 @@ jobs:
       source: ${{ env.BUILD_DIR }}/
       target: /tmp/angularapp # Use a temporary folder on EC2
 
-  - name: 🧰 Install NGINX on EC2 (if not present)
-      run:|
-        ssh ${{ secrets.JOBMATCH_EC2_USER }}@${{ secrets.JOBMATCH_EC2_HOST }} <<'EOF'
-          if ! command -v nginx &> /dev/null; then
-            echo "NGINX not found. Installing..."
-            sudo apt update
-            sudo apt install -y nginx
-            sudo systemctl enable nginx
-          else
-            echo "NGINX is already installed."
-          fi
-        EOF
+  - name: Execute Remote SSH Commands on EC2
+    uses: appleboy/ssh-action@v1.0.0
+    with:
+      host: ${{ secrets.EC2_HOST }}
+      username: ${{ secrets.EC2_USER }}
+      key: ${{ secrets.JOBMATCH_EC2_SSH_KEY }}
+      script: |
+        # Ensure Nginx is installed and running (assuming Debian/Ubuntu EC2 instance)
+        echo "Installing Nginx if necessary..."
+        sudo apt update -y
+        sudo apt install nginx -y
+        sudo systemctl enable nginx
+        sudo systemctl start nginx
 
   - name: Execute Remote SSH Commands on EC2
     uses: appleboy/ssh-action@v1.0.0
