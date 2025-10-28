@@ -1,26 +1,22 @@
 name: Angular CI/CD to EC2
 
 on:
-push:
-branches:
-- main # Change to master or your primary branch if needed
+ push:
+  branches:
+    - main # Change to master or your primary branch if needed
 
-Define environment variables used throughout the workflow
 
 env:
-NODE_VERSION: '20'
-BUILD_DIR: dist/angularapp/browser # <<< CRITICAL: Update this path!
-
-Check your angular.json "outputPath" for the correct build directory.
-
-REMOTE_DIR: /var/www/jobmatch # Target directory on EC2 where Nginx serves files
+ NODE_VERSION: '20'
+ BUILD_DIR: dist/angularapp/browser # <<< CRITICAL: Update this path!
+ REMOTE_DIR: /var/www/jobmatch # Target directory on EC2 where Nginx serves files
 
 jobs:
-deploy:
-runs-on: ubuntu-latest
-environment: Production
+ deploy:
+  runs-on: ubuntu-latest
+  environment: Production
 
-steps:
+  steps:
   - name: Checkout Code
     uses: actions/checkout@v4
 
