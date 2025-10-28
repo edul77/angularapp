@@ -1,107 +1,100 @@
-name: Deploy Angular to EC2 with NGINX
+name: Angular CI/CD to EC2
 
 on:
-  push:
-    branches:
-      - master 
-      
-      
+push:
+branches:
+- main # Change to master or your primary branch if needed
+
+Define environment variables used throughout the workflow
+
+env:
+NODE_VERSION: '20'
+BUILD_DIR: dist/angularapp/browser # <<< CRITICAL: Update this path!
+
+Check your angular.json "outputPath" for the correct build directory.
+
+REMOTE_DIR: /var/www/jobmatch # Target directory on EC2 where Nginx serves files
 
 jobs:
-  build-and-deploy:
-    runs-on: ubuntu-latest
+deploy:
+runs-on: ubuntu-latest
+environment: Production
 
-    steps:
-      - name: 📥 Checkout Code
-        uses: actions/checkout@v4
+steps:
+  - name: Checkout Code
+    uses: actions/checkout@v4
 
-      - name: 🟢 Setup Node.js
-        uses: actions/setup-node@v4
-        with:
-          node-version: 18
+  - name: Set up Node.js
+    uses: actions/setup-node@v4
+    with:
+      node-version: ${{ env.NODE_VERSION }}
 
-      - name: 📦 Install Dependencies
-        run: npm ci
+  - name: Install Dependencies and Build Angular App
+    run: |
+      npm ci # Install dependencies securely
+      npm run build -- --configuration=production # Build for production
+    env:
+      # Optional: Use environment variables for build if necessary
+      CI: true
 
-      - name: 🏗️ Build Angular App
-        run: npm run build -- --configuration production
+  - name: List Build Artifacts (for debugging)
+    run: ls -l ${{ env.BUILD_DIR }}
 
-      - name: 🔎 Debug dist folder
-        run: ls -R dist/
+  - name: Deploy via SCP (Secure Copy) to EC2
+    uses: appleboy/scp-action@v0.1.7
+    with:
+      # --- Secrets Configuration (Requires setting these in GitHub repository settings) ---
+      host: ${{ secrets.EC2_HOST }}
+      username: ${{ secrets.EC2_USER }}
+      key: ${{ secrets.JOBMATCH_EC2_SSH_KEY }}
+      # ---------------------------------------------------------------------------------
+      source: ${{ env.BUILD_DIR }}/
+      target: /tmp/angularapp # Use a temporary folder on EC2
 
-      - name: 🔑 Setup SSH Key
-        run: |
-          mkdir -p ~/.ssh
-          echo "${{ secrets.JOBMATCH_EC2_SSH_KEY }}" > ~/.ssh/id_rsa
-          sudo chmod 600 ~/.ssh/id_rsa
-          ssh-keyscan -H ${{ secrets.JOBMATCH_EC2_HOST }} >> ~/.ssh/known_hosts
+  - name: 🧰 Install NGINX on EC2 (if not present)
+      run:|
+        ssh ${{ secrets.JOBMATCH_EC2_USER }}@${{ secrets.JOBMATCH_EC2_HOST }} <<'EOF'
+          if ! command -v nginx &> /dev/null; then
+            echo "NGINX not found. Installing..."
+            sudo apt update
+            sudo apt install -y nginx
+            sudo systemctl enable nginx
+          else
+            echo "NGINX is already installed."
+          fi
+        EOF
 
+  - name: Execute Remote SSH Commands on EC2
+    uses: appleboy/ssh-action@v1.0.0
+    with:
+      host: ${{ secrets.EC2_HOST }}
+      username: ${{ secrets.EC2_USER }}
+      key: ${{ secrets.JOBMATCH_EC2_SSH_KEY }}
+      script: |
+        # 1. Create the target directory if it doesn't exist
+        echo "Ensuring target directory exists: ${{ env.REMOTE_DIR }}"
+        sudo mkdir -p ${{ env.REMOTE_DIR }}
 
-      - name: 🧰 Install NGINX on EC2 (if not present)
-        run: |
-          ssh ${{ secrets.JOBMATCH_EC2_USER }}@${{ secrets.JOBMATCH_EC2_HOST }} <<'EOF'
-            if ! command -v nginx &> /dev/null; then
-              echo "NGINX not found. Installing..."
-              sudo apt update
-              sudo apt install -y nginx
-              sudo systemctl enable nginx
-            else
-              echo "NGINX is already installed."
-            fi
-          EOF
-          
+        # 2. Clean up the existing app files (optional, but ensures no stale files remain)
+        echo "Cleaning up old files in ${{ env.REMOTE_DIR }}"
+        sudo rm -rf ${{ env.REMOTE_DIR }}/*
 
-      - name: 🗂️ Ensure /var/www/jobmatch exists
-        run: |
-         ssh -i ~/.ssh/id_rsa ${{ secrets.JOBMATCH_EC2_USER }}@${{ secrets.JOBMATCH_EC2_HOST }} <<'EOF'
-         
-           if [ ! -d "jobmatch" ]; then
-              echo "📁 Directory jobmatch does not exist. Creating..."
-              sudo mkdir -p /var/www/jobmatch
-              sudo chown -R www-data:www-data /var/www/jobmatch
-              sudo find /var/www/jobmatch -type d -exec chmod 755 {} \;
-              sudo find /var/www/jobmatch -type f -exec chmod 644 {} \;" 
-           else
-              echo "✅ Directory $DEPLOY_DIR already exists. Skipping creation."
-            fi
-         EOF 
-        
-      - name: ⚙️ Configure NGINX
-        run: |
-         ssh -i ~/.ssh/id_rsa ${{ secrets.JOBMATCH_EC2_USER }}@${{ secrets.JOBMATCH_EC2_HOST }} 
-         sudo tee /etc/nginx/sites-available/jobmatch > /dev/null <<'EOF'
-         server {
-           listen 80;
-           server_name  campusvaultgh.com;
+        # 3. Move the new built files from the temporary upload location
+        echo "Copying new files from /tmp/angular-app-upload to ${{ env.REMOTE_DIR }}"
+        # Note: We move the *contents* of the upload folder
+        sudo mv /tmp/angularapp/* ${{ env.REMOTE_DIR }}/
 
-           root /var/www/jobmatch;
-           index index.html;
+        # 4. Set appropriate permissions (e.g., for Nginx/www-data user)
+        echo "Setting permissions for ${{ env.REMOTE_DIR }}"
+        sudo chown -R www-data:www-data ${{ env.REMOTE_DIR }}
+        sudo chmod -R 755 ${{ env.REMOTE_DIR }}
 
-           location / {
-          try_files \$uri \$uri/ /index.html;
-         }
-         
-         }
-         EOF
-         
-         
-      - name: activating nginx site 
-        run: | 
-         ssh -i ~/.ssh/id_rsa ${{ secrets.JOBMATCH_EC2_USER }}@${{ secrets.JOBMATCH_EC2_HOST }}
-         sudo ln -sf /etc/nginx/sites-available/jobmatch /etc/nginx/sites-enabled/
-         sudo nginx -t && sudo systemctl restart nginx
-         
+        # 5. Clean up the temporary directory
+        echo "Cleaning up temporary folder /tmp/angular-app-upload"
+        sudo rm -rf /tmp/angularapp
 
-      - name: Copy Build Files to EC2
-        run: |
-         scp -i ~/.ssh/id_rsa -r dist/angularapp/browser/* ${{ secrets.JOBMATCH_EC2_USER }}@${{ secrets.JOBMATCH_EC2_HOST }}:/var/www/jobmatch/
-         sudo chown -R www-data:www-data /var/www/jobmatch
-         sudo find /var/www/jobmatch -type d -exec chmod 755 {} \;
-         sudo find /var/www/jobmatch -type f -exec chmod 644 {} \;
-         
+        # 6. Restart Nginx to serve the new content
+        echo "Restarting Nginx"
+        sudo systemctl restart nginx || echo "Nginx restart failed. Check logs."
 
-
-      - name: 🔄 Restart NGINX (optional)
-        run: |
-          ssh ${{ secrets.JOBMATCH_EC2_USER }}@${{ secrets.JOBMATCH_EC2_HOST }} 'sudo systemctl restart nginx'
-          
+        echo "Deployment complete!"
