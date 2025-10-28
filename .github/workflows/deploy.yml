@@ -7,7 +7,7 @@ on:
 
 
 env:
- NODE_VERSION: '18'
+ NODE_VERSION: '20'
  BUILD_DIR: dist/angularapp/browser # <<< CRITICAL: Update this path!
  REMOTE_DIR: /var/www/jobmatch # Target directory on EC2 where Nginx serves files
 
