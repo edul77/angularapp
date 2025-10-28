@@ -60,6 +60,7 @@ jobs:
         sudo apt install nginx -y
         sudo systemctl enable nginx
         sudo systemctl start nginx
+        
 
   - name: Execute Remote SSH Commands on EC2
     uses: appleboy/ssh-action@v1.0.0
