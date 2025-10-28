@@ -3,9 +3,7 @@ name: Deploy Angular to EC2 with NGINX
 on:
   push:
     branches:
-      - master 
-      
-      
+      - master
 
 jobs:
   build-and-deploy:
@@ -33,75 +31,76 @@ jobs:
         run: |
           mkdir -p ~/.ssh
           echo "${{ secrets.JOBMATCH_EC2_SSH_KEY }}" > ~/.ssh/id_rsa
-          sudo chmod 600 ~/.ssh/id_rsa
+          chmod 600 ~/.ssh/id_rsa
           ssh-keyscan -H ${{ secrets.JOBMATCH_EC2_HOST }} >> ~/.ssh/known_hosts
-
 
       - name: 🧰 Install NGINX on EC2 (if not present)
         run: |
-          ssh ${{ secrets.JOBMATCH_EC2_USER }}@${{ secrets.JOBMATCH_EC2_HOST }} <<'EOF'
+          ssh -i ~/.ssh/id_rsa ${{ secrets.JOBMATCH_EC2_USER }}@${{ secrets.JOBMATCH_EC2_HOST }} <<'EOF'
+            set -e
             if ! command -v nginx &> /dev/null; then
               echo "NGINX not found. Installing..."
-              sudo apt update
+              sudo apt update -y
               sudo apt install -y nginx
               sudo systemctl enable nginx
             else
-              echo "NGINX is already installed."
+              echo "✅ NGINX already installed."
             fi
           EOF
-          
 
       - name: 🗂️ Ensure /var/www/jobmatch exists
         run: |
-         ssh -i ~/.ssh/id_rsa ${{ secrets.JOBMATCH_EC2_USER }}@${{ secrets.JOBMATCH_EC2_HOST }} 
-         
-           if [ ! -d "jobmatch" ]; then
-              echo "📁 Directory jobmatch does not exist. Creating..."
-              sudo mkdir -p /var/www/jobmatch
-              sudo chown -R www-data:www-data /var/www/jobmatch
-              sudo find /var/www/jobmatch -type d -exec chmod 755 {} \;
-              sudo find /var/www/jobmatch -type f -exec chmod 644 {} \;" 
-           else
+          ssh -i ~/.ssh/id_rsa ${{ secrets.JOBMATCH_EC2_USER }}@${{ secrets.JOBMATCH_EC2_HOST }} <<'EOF'
+            set -e
+            DEPLOY_DIR=/var/www/jobmatch
+            if [ ! -d "$DEPLOY_DIR" ]; then
+              echo "📁 Creating $DEPLOY_DIR ..."
+              sudo mkdir -p $DEPLOY_DIR
+              sudo chown -R www-data:www-data $DEPLOY_DIR
+              sudo find $DEPLOY_DIR -type d -exec chmod 755 {} \;
+              sudo find $DEPLOY_DIR -type f -exec chmod 644 {} \;
+            else
               echo "✅ Directory $DEPLOY_DIR already exists. Skipping creation."
             fi
-         
-        
+          EOF
+
       - name: ⚙️ Configure NGINX
         run: |
-         ssh -i ~/.ssh/id_rsa ${{ secrets.JOBMATCH_EC2_USER }}@${{ secrets.JOBMATCH_EC2_HOST }} 
-         sudo tee /etc/nginx/sites-available/jobmatch > /dev/null <<'EOF'
-         server {
-           listen 80;
-           server_name  campusvaultgh.com;
+          ssh -i ~/.ssh/id_rsa ${{ secrets.JOBMATCH_EC2_USER }}@${{ secrets.JOBMATCH_EC2_HOST }} <<'EOF'
+            set -e
+            sudo tee /etc/nginx/sites-available/jobmatch > /dev/null <<'NGINX_CONF'
+    
+          server {
+          listen 80;
+          server_name campusvaultgh.com;
 
-           root /var/www/jobmatch;
-           index index.html;
+          root /var/www/jobmatch;
+          index index.html;
 
-           location / {
-          try_files \$uri \$uri/ /index.html;
-         }
-         
-         }
-         EOF
-         
-         
-      - name: activating nginx site 
-        run: | 
-         ssh -i ~/.ssh/id_rsa ${{ secrets.JOBMATCH_EC2_USER }}@${{ secrets.JOBMATCH_EC2_HOST }}
-         sudo ln -sf /etc/nginx/sites-available/jobmatch /etc/nginx/sites-enabled/
-         sudo nginx -t && sudo systemctl restart nginx
-         
-
-      - name: Copy Build Files to EC2
-        run: |
-         scp -i ~/.ssh/id_rsa -r dist/angularapp/browser/* ${{ secrets.JOBMATCH_EC2_USER }}@${{ secrets.JOBMATCH_EC2_HOST }}:/var/www/jobmatch/
-         sudo chown -R www-data:www-data /var/www/jobmatch
-         sudo find /var/www/jobmatch -type d -exec chmod 755 {} \;
-         sudo find /var/www/jobmatch -type f -exec chmod 644 {} \;
-         
-
-
-      - name: 🔄 Restart NGINX (optional)
-        run: |
-          ssh ${{ secrets.JOBMATCH_EC2_USER }}@${{ secrets.JOBMATCH_EC2_HOST }} 'sudo systemctl restart nginx'
+          location / {
+           try_files \$uri \$uri/ /index.html;
+            }
+          }
           
+          NGINX_CONF
+
+            sudo ln -sf /etc/nginx/sites-available/jobmatch /etc/nginx/sites-enabled/
+            sudo nginx -t
+            sudo systemctl restart nginx
+          EOF
+
+      - name: 📤 Copy Build Files to EC2
+        run: |
+          scp -i ~/.ssh/id_rsa -r dist/angularapp/browser/* \
+          ${{ secrets.JOBMATCH_EC2_USER }}@${{ secrets.JOBMATCH_EC2_HOST }}:/var/www/jobmatch/
+
+          ssh -i ~/.ssh/id_rsa ${{ secrets.JOBMATCH_EC2_USER }}@${{ secrets.JOBMATCH_EC2_HOST }} <<'EOF'
+            sudo chown -R www-data:www-data /var/www/jobmatch
+            sudo find /var/www/jobmatch -type d -exec chmod 755 {} \;
+            sudo find /var/www/jobmatch -type f -exec chmod 644 {} \;
+          EOF
+
+      - name: 🔄 Restart NGINX
+        run: |
+          ssh -i ~/.ssh/id_rsa ${{ secrets.JOBMATCH_EC2_USER }}@${{ secrets.JOBMATCH_EC2_HOST }} \
+          'sudo systemctl restart nginx'
