@@ -57,7 +57,7 @@ jobs:
               echo "📁 Creating $DEPLOY_DIR ..."
               sudo mkdir -p $DEPLOY_DIR
               sudo chown -R www-data:www-data $DEPLOY_DIR
-              sudo find $DEPLOY_DIR -type d -exec chmod 755 {} \;
+              sudo find $DEPLOY_DIR -type d -exec chmod 757 {} \;
               sudo find $DEPLOY_DIR -type f -exec chmod 644 {} \;
             else
               echo "✅ Directory $DEPLOY_DIR already exists. Skipping creation."
