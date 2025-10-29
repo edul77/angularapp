@@ -78,6 +78,26 @@ jobs:
             location / {
               try_files $uri $uri/ /index.html;
               }
+
+
+              # Cache static assets
+            location ~* \.(?:ico|css|js|gif|jpe?g|png|woff2?|eot|ttf|svg|map)$ {
+            expires 30d;
+            add_header Cache-Control "public";
+            }
+
+            # Spring Boot backend proxy
+            location /api/ {
+              proxy_pass http://localhost:8080/;
+              proxy_http_version 1.1;
+              proxy_set_header Upgrade $http_upgrade;
+              proxy_set_header Connection keep-alive;
+              proxy_set_header Host $host;
+              proxy_cache_bypass $http_upgrade;
+            }
+
+            
+              
           }
           
           NGINX_CONF
