@@ -82,8 +82,8 @@ jobs:
 
               # Cache static assets
             location ~* \.(?:ico|css|js|gif|jpe?g|png|woff2?|eot|ttf|svg|map)$ {
-            expires 30d;
-            add_header Cache-Control "public";
+              expires 30d;
+              add_header Cache-Control "public";
             }
 
             # Spring Boot backend proxy
