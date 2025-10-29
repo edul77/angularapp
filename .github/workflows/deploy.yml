@@ -70,7 +70,7 @@ jobs:
     
           server {
             listen 80;
-            server_name campusvaultgh.com;
+            server_name 54.235.19.14;
 
             root /var/www/jobmatch;
             index index.html;
